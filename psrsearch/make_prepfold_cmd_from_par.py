@@ -287,6 +287,35 @@ def make_prepfold_cmd(args, nfold=1, ifold=1):
     cmd.append(args.file)
 
     print(" ".join(cmd))
+    return " ".join(cmd)
+
+def make_sbatch_cmds(cmdlst):
+    with open("prepfold_cmds.txt", "w") as f:
+        for cmd in cmdlst:
+            f.write(cmd + "\n")
+    
+    cmd = f"""#!/bin/bash
+#SBATCH --account=pawsey0272
+#SBATCH --output=./logs/%x_%A_%a.out
+#SBATCH --error=./logs/%x_%A_%a.err
+#SBATCH --mem=64G
+#SBATCH --time=1:00:00
+#SBATCH --job-name=prepfold
+#SBATCH --cpus-per-task=4
+#SBATCH --array=1-4
+
+module use /software/projects/pawsey0272/setonix/2025.08/modules/zen3/gcc/14.2.0
+module load singularity/4.1.0-psr
+
+export psrsrc="singularity exec /software/projects/pawsey0272/zwan4817/container/psr-search.sif"
+export psraly="singularity exec /software/projects/pawsey0272/zwan4817/container/psr-analysis.sif" 
+
+CMD=$(sed -n "${{SLURM_ARRAY_TASK_ID}}p" prepfold_cmds.txt)
+echo "Running: $CMD"
+eval $psrsrc $CMD
+"""
+    with open("prepfold.sbatch", "w") as f:
+        f.write(cmd)
 
 
 # ------------------------------------------------------------------- main
@@ -315,12 +344,12 @@ def main():
     ap.add_argument("--extra", default="-npfact 4 -ndmfact 2 -pstep 1 -pdstep 1 -dmstep 3", help="extra prepfold options")
     args = ap.parse_args()
 
+    cmdlst = []
     if args.nfold > 1:
         for i in range(args.nfold):
-            make_prepfold_cmd(args, nfold=args.nfold, ifold=i + 1)
+            cmdlst.append(make_prepfold_cmd(args, nfold=args.nfold, ifold=i + 1))
 
-
-    
+    make_sbatch_cmds(cmdlst)
 
 
 if __name__ == "__main__":
