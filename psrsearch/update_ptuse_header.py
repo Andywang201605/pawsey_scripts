@@ -33,4 +33,8 @@ if __name__ == "__main__":
     ra = "16:46:22.98"
     dec = "-44:05:40.8"
 
-    update_ptuse_header("./J1646_ep1.sf", ra, dec)
+    import glob
+    searchfiles = glob.glob("./*.sf")
+    for file in searchfiles:
+        print(f"Updating PTUSE header in {file} with RA={ra}, DEC={dec}")
+        update_ptuse_header(file, ra, dec)
