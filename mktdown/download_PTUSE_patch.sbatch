@@ -1,6 +1,5 @@
 #!/bin/bash -l
 #SBATCH --account=pawsey0272
-#SBATCH --partition=copy
 #SBATCH --output=./logs/%x_%A_%a.out
 #SBATCH --error=./logs/%x_%A_%a.err
 #SBATCH --mem=10G
