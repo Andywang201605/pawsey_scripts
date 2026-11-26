@@ -41,7 +41,7 @@ while getopts ":b:n:d:o:" opt; do
             DM="$OPTARG"
             ;;
         o)
-            OUTBASE="$OPTARG"
+            OUTDIR="$OPTARG"
             ;;
         :)
             echo "Error: Option -$OPTARG requires an argument."
@@ -96,12 +96,14 @@ convert_file() {
         $psraly digifil -b "$NBIT" \
                 -F"$NCHAN" \
                 -o "$outfile" \
+                -d 1 \
                 "$hdr"
     else
         $psraly digifil -b "$NBIT" \
                 -F"${NCHAN}:D" \
                 -D "$DM" \
                 -o "$outfile" \
+                -d 1 \
                 "$hdr"
     fi
 
